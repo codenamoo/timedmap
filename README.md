@@ -1,8 +1,10 @@
 # TimedMap
+
 Not heavily tested yet.
 
 ## Test
-  $ go test -v test/timedmap_test.go
+    $ go get github.com/codenamoo/timedmap
+    $ go test -v $ go test -v $GOPATH/src/github.com/codenamoo/timedmap/test/timedmap_test.go
 
 
 
