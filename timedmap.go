@@ -19,6 +19,13 @@ type TimedMap struct {
 	ticker *time.Ticker
 }
 
+func NewTimedMap() *TimedMap {
+	m := &TimedMap{}
+	m = startTTL(m)
+
+	return m
+}
+
 func startTTL(m *TimedMap) *TimedMap {
 	m.m = make(map[string]*item)
 

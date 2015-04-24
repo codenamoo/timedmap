@@ -9,7 +9,7 @@ import (
 )
 
 func TestFunction(t *testing.T) {
-	m := timedmap.TimedMap{}
+	m := timedmap.NewTimedMap()
 
 	// put new key:value
 	fmt.Printf("timedmap demo\n")
