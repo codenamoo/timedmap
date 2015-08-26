@@ -13,12 +13,15 @@ type item struct {
 	basettl int
 }
 
+// TimedMap is a map with TTL.
+// Default TTL is non.
 type TimedMap struct {
 	m      map[string]*item
 	lock   sync.Mutex
 	ticker *time.Ticker
 }
 
+// NewTimedMap returns a new TimeMap
 func NewTimedMap() *TimedMap {
 	m := &TimedMap{}
 	m = startTTL(m)
@@ -56,10 +59,15 @@ func startTTL(m *TimedMap) *TimedMap {
 	return m
 }
 
+// Len returns how many keys stored in the TimedMap
 func (m *TimedMap) Len() int {
 	return len(m.m)
 }
 
+// Put inserts a new key:value with default TTL.
+// If the given key already exist,
+// then update the value as given value
+// and returns an old value.
 func (m *TimedMap) Put(key string, value interface{}) (interface{}, error) {
 	// use default ttl
 	// default ttl is -1
@@ -88,6 +96,10 @@ func (m *TimedMap) Put(key string, value interface{}) (interface{}, error) {
 	return ret.value, nil
 }
 
+// PutRaw inserts a new key:value with TTL.
+// If the given key already exist,
+// then update the value as given value
+// and returns an old value.
 func (m *TimedMap) PutRaw(key string, value interface{}, ttl int) (interface{}, error) {
 	// use given ttl
 
@@ -118,6 +130,9 @@ func (m *TimedMap) PutRaw(key string, value interface{}, ttl int) (interface{}, 
 	return ret.value, nil
 }
 
+// Get returns a value.
+// If the key is not exist,
+// then return error as not nil
 func (m *TimedMap) Get(key string) (interface{}, error) {
 	if i, ok := m.m[key]; ok {
 		// Yeah, found the key !
@@ -133,6 +148,22 @@ func (m *TimedMap) Get(key string) (interface{}, error) {
 	}
 }
 
+// Get returns a value.
+// If the key is not exist,
+// then return error as not nil
+func (m *TimedMap) GetRaw(key string) (interface{}, error) {
+	if i, ok := m.m[key]; ok {
+		// Yeah, found the key !
+		return i.value, nil
+	} else {
+		// ooops can not find the key
+		return nil, errors.New("This map contains no mapping for the key")
+	}
+}
+
+// GetTTL returns a TTL of the given key.
+// If the key is not exist,
+// then return error as not nil
 func (m *TimedMap) GetTTL(key string) (int, error) {
 	if i, ok := m.m[key]; ok {
 		// Yeah, found the key !
@@ -144,19 +175,24 @@ func (m *TimedMap) GetTTL(key string) (int, error) {
 	}
 }
 
-func (m *TimedMap) Touch(key string) error {
+// Touch refresh teh TTL of the given key
+// If the key is not exist,
+// then return error as not nil
+func (m *TimedMap) Touch(key string) (int, error) {
 	if i, ok := m.m[key]; ok {
 		// Yeah, found the key !
 		m.lock.Lock()
 		defer m.lock.Unlock()
 		i.ttl = i.basettl
-		return nil
+		return i.basettl, nil
 	} else {
 		// ooops can not find the key
-		return errors.New("This map Contains no mappging for the key")
+		return -1, errors.New("This map Contains no mappging for the key")
 	}
 }
 
+// Returns true
+// if this map contains a mapping for the specified key
 func (m *TimedMap) ContainsKey(key string) bool {
 	if _, ok := m.m[key]; ok {
 		// Yeah, key exist!
@@ -167,6 +203,8 @@ func (m *TimedMap) ContainsKey(key string) bool {
 	}
 }
 
+// Removes the mapping for the given key from this map
+// if present.
 func (m *TimedMap) Remove(key string) (interface{}, error) {
 	if i, ok := m.m[key]; ok {
 		// Yeah, key exist!
@@ -183,6 +221,7 @@ func (m *TimedMap) Remove(key string) (interface{}, error) {
 	}
 }
 
+// Clear clear whole map
 func (m *TimedMap) Clear() {
 	m.lock.Lock()
 	for k, _ := range m.m {
@@ -191,6 +230,7 @@ func (m *TimedMap) Clear() {
 	m.lock.Unlock()
 }
 
+// PrintMap shows the key and value with its TTL
 func (m *TimedMap) PrintMap() {
 	for k, v := range m.m {
 		fmt.Printf("%s : %v - TTL: %d\n", k, v.value, v.ttl)
