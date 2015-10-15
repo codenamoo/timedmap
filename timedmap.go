@@ -175,6 +175,18 @@ func (m *TimedMap) GetTTL(key string) (int, error) {
 	}
 }
 
+func (m *TimedMap) SetTTL(key string, ttl int) (int, error) {
+	if i, ok := m.m[key]; ok {
+		// Yeah, found the key !
+		i.ttl = ttl
+		i.basettl = ttl
+		return i.ttl, nil
+	} else {
+		// ooops can not find the key
+		return 0, errors.New("This map Contains no mappging for the key")
+	}
+}
+
 // Touch refresh teh TTL of the given key
 // If the key is not exist,
 // then return error as not nil
